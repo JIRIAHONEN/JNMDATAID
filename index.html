@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kappale - Henkilötietojärjestelmä</title>
+    <style>
+        /* Neon Cyan Theme */
+        body {
+    font-family: Arial, sans-serif;
+    background-color: #111;
+    color: #00FFFF;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: 20px; /* Increased font size */
+}
+
+h1 {
+    color: #00FFFF;
+    width: 100%;
+    text-align: center;
+    margin-bottom: 20px;
+    font-size: 28px; /* Increased font size */
+}
+
+.container {
+    width: 100%;
+    margin: 0 auto;
+    text-align: center;
+}
+
+#searchInput {
+    width: 90%;
+    padding: 15px;
+    margin-bottom: 30px;
+    background-color: #333;
+    color: #00FFFF;
+    border: 2px solid #00FFFF;
+    border-radius: 8px;
+    font-size: 18px; /* Increased font size */
+}
+
+#searchResults {
+    list-style: none;
+    padding: 0;
+    text-align: center;
+    width: 100%;
+}
+
+.searchResult {
+    border: 2px solid #00FFFF;
+    padding: 15px;
+    margin-bottom: 20px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    border-radius: 8px;
+    width: 100%;
+    font-size: 18px; /* Increased font size */
+}
+
+.searchResult:hover {
+    background-color: #444;
+    color: #00FFFF;
+}
+
+#generateDocumentButton {
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    padding: 15px;
+    text-align: center;
+    text-decoration: none;
+    display: block;
+    font-size: 22px; /* Increased font size */
+    margin-top: 20px;
+    cursor: pointer;
+    border-radius: 8px;
+    width: 90%;
+}
+
+#personDetails {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin-top: 30px;
+    border: 2px solid #00FFFF;
+    padding: 30px;
+    border-radius: 8px;
+    width: 90%;
+}
+
+#personDetails.active {
+    background-color: #4CAF50;
+}
+
+#personDetails h2 {
+    margin-bottom: 20px;
+    font-size: 24px; /* Increased font size */
+}
+
+.personDetail {
+    margin: 15px 0;
+    font-size: 20px; /* Increased font size */
+}
+
+#additionalDetails {
+    margin-top: 20px;
+    width: 90%;
+    font-size: 20px; /* Increased font size */
+}
+
+#personalNotes {
+    width: 90%;
+    padding: 15px;
+    box-sizing: border-box;
+    border: 2px solid #00FFFF;
+    border-radius: 8px;
+    width: 90%;
+    font-size: 18px; /* Increased font size */
+}
+
+#documentDisplay {
+    margin-top: 30px;
+    border: 2px solid #00FFFF;
+    padding: 30px;
+    border-radius: 8px;
+    width: 90%;
+    font-size: 20px; /* Increased font size */
+}
+
+#clickedPersonsLog,
+#logDisplay,
+#searchLogs {
+    list-style: none;
+    padding: 0;
+    text-align: center;
+    width: 100%;
+}
+
+#logDisplay {
+    display: none;
+    margin-top: 30px;
+    border: 2px solid #00FFFF;
+    padding: 30px;
+    border-radius: 8px;
+    width: 90%;
+    font-size: 20px; /* Increased font size */
+}
+
+#logDisplay h2 {
+    margin-bottom: 20px;
+    font-size: 24px; /* Increased font size */
+}
+
+#detailsBar {
+    background-color: #555;
+    color: #fff;
+    padding: 10px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    text-align: center;
+    font-size: 18px; /* Increased font size */
+}
+
+#greyBar {
+    background-color: #333;
+    color: #00ffff;
+    padding: 2px;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    text-align: center;
+    border-top: 2px solid #00FFFF;
+    font-size: 18px; /* Increased font size */
+}
+/* Add margin to text elements */
+#personDetails,
+#personalNotes,
+#documentDisplay,
+#logDisplay,
+#additionalDetails,
+#clickedPersonsLog,
+.personDetail {
+    margin: 10px;
+}
+/* Center all text */
+body,
+h1,
+#generateDocumentButton,
+.searchResult,
+#searchInput,
+#additionalDetails,
+#personalNotes,
+#documentDisplay,
+#logDisplay,
+#clickedPersonsLog {
+    text-align: center;
+}
+    </style>
+</head>
+<body>
+    <h1>Henkilöhaku Ja Tietojen muutos</h1>
+    <input type="text" id="searchInput" placeholder="Search by name" oninput="displaySearchResults(this.value)">
+    <ul id="searchResults"></ul>
+    <div id="personDetails">
+        <h2>Henkilön Tiedot</h2>
+        <p><strong>ID:</strong> <span id="personID"></span></p>
+        <p><strong>Nimi:</strong> <span id="personName"></span></p>
+        <p><strong>Osuua:</strong> <span id="personRole"></span></p>
+        <p><strong>Artistinimi :</strong> <span id="personArtistName"></span></p>
+        <div id="additionalDetails"></div>
+        <div>
+            <label for="personalNotes">Personal Notes:</label>
+            <textarea id="personalNotes" rows="4" placeholder="Add personal notes..."></textarea>
+        </div>
+        <button id="generateDocumentButton" onclick="generateDocument()">Tallenna Viesti Lokiin MUISTA HENKILÖN NIMI</button>
+    </div>
+    <div id="documentDisplay"></div>
+    <button id="showLogButton" onclick="showLog()">Näytä Henkilöloki</button>
+    <div id="logDisplay">
+        <h2>Hakuloki</h2>
+        <ul id="clickedPersonsLog"></ul>
+    </div>
+    <ul id="searchLogs"></ul>
+    <!-- Grey bar -->
+    <div id="greyBar">
+        <p><strong>JNM RECORDS 2023</strong> | Sessiotunnus : <span id="sessionID"></span> | Aikaleima: <span id="currentDate"></span></p>
+    </div>
+<Script>
+
+    const peopleData = [
+        { 
+            Nimi: "Jiri Ahonen",
+            Osuus: "Tuottaja",
+            Artistinimi: "Jiri Ahonen",
+            ID: generateID(),
+            Lisatiedot: "Asuinpaikka: Mikkeli Puh 0449875324 Gmail: Nakkijikki@gmail,com Käsitellyt Kappaleet: Tää On Se - 2023-10-21 - SE6FC2315493 - Producer Ikkuna Anthem - 2023-10-19 - SE6FC2315491 - Primary artist Ikkuna Anthem - 2023-10-19 - SE6FC2315491 - Producer Ikkuna Anthem - 2023-10-19 - SE6FC2315491 - Composer PLAYAS - 2023-10-18 - SE6FC2315490 - Composer PLAYAS - 2023-10-18 - SE6FC2315490 - Producer Ikkuna Anthem - 2023-10-17 - SE6FC2315472 - Composer Ikkuna Anthem - 2023-10-17 - SE6FC2315472 - Primary artist Ikkuna Anthem - 2023-10-17 -SE6FC2315472 - Producer Ylhääl - 2023-08-08 - Primary artist, Lyricist Itelleni Paikkaa - 2023-08-08 - Primary artist Closer - 2023-08-08 - Primary artist, Lyricist Raketti - 2023-08-08 - Primary artist Haittaaks - 2023-07-30 - Publisher Tuhatta Ja Sataa - 2023-06-13 - Composer, with, Arranger Kesäkuvioit - 2023-05-09 - Primary artist, Composer 15V - 2023-03-29 - Primary artist, Composer Suljin Mun Silmät - 2023-02-09 - Composer, Producer, Primary artist Kun Joulu Saapuu - 2022-12-22 - Producer Sisällä mun Pään - 2022-11-26 - Primary artist  ",
+            Muistiinpanot: [] 
+        },
+        { 
+            Nimi: "Nuutti Jussila",
+            Osuus: "Sanoittaja, Artisti",
+            Artistinimi: "Nikoolai",
+            ID: generateID(),
+            Lisatiedot: "GMAIL: nujussila@gmail.com Asuinpaikka Mikkeli Tää On Se - 2023-10-21 - SE6FC2315493 - Performer, ComposerIkkuna Anthem - 2023-10-19 - SE6FC2315491 - Primary artist, LyricistPLAYAS - 2023-10-18 - SE6FC2315490 - Primary artistIkkuna Anthem - 2023-10-17 - SE6FC2315472 - Primary artist, LyricistIkkuna Anthem - 2023-10-16 - Primary artist, LyricistPLAYAS - 2023-10-02 - Primary artist, LyricistKop Kop - 2023-09-11 - SE6FC2305577 - withShowman - 2023-09-04 - FeaturingItelleni Paikkaa - 2023-08-08 - Performer, LyricistTuhatta Ja Sataa - 2023-06-13 - SE6FC2305361 - Primary artist, LyricistKesäkuvioit - 2023-05-09 - SE6FC2305315 - FeaturingSuljin Mun Silmät - 2023-02-09 - SE6FC2304941 - Featuring", 
+            Muistiinpanot: [] 
+        },
+        { 
+            Nimi: "Riikka Pylkkänen",
+            Osuus: "Laulaja,Artisti",
+            Artistinimi: "RIIKKA",
+            ID: generateID(),
+            Lisatiedot: "Gmail - Puh - Asuimpaikka Mikkeli Kun Joulu Saapuu 2022-12-22 SE6FC2204586 Primary artist",
+            Muistiinpanot: [] 
+        },
+        { 
+            Nimi: "Albert Manninen",
+            Osuus: "Artisti",
+            Artistinimi: "Albert",
+            ID: generateID(),
+            Lisatiedot: "PUH- Gmail: Albert.MANNINEN@EDU.MIKKELI.FI Ole Mukana - 2023-08-31 - Performer 15V - 2023-03-29 - with Valot Sammuu - 2022-04-08 - Lyricist Valot Sammuu - 2022-04-04 - with Korkeel - 2022-03-03 - Composer ",
+            Muistiinpanot: [] 
+        },
+        { 
+            Nimi: "Eetu Eskelinen",
+            Osuus: "Grafiikka",
+            Artistinimi: "NO DATA PHONOGRAMMIN SUUNNITTELU- PLAYAS- SE6FC2315490",
+            ID: generateID(),
+            Lisatiedot: "Asuinpaikka Mikkeli ",
+            Muistiinpanot: [] 
+        },
+        { 
+            Nimi: "Anna Riaikinen",
+            Osuus: "Artisti",
+            Artistinimi: "Anna Ria",
+            ID: generateID(),
+            Lisatiedot: "EI TIETOJA Tää On Se 2023-10-21 SE6FC2315493 Primary artist Tä On Se 2023-10-21 SE6FC2315493 Lyricist",
+            Muistiinpanot: [] 
+        },
+        { 
+            Nimi: "Dani Kaikkonen",
+            Osuus: "Artisti",
+            Artistinimi: "D4N1",
+            ID: generateID(),
+            Lisatiedot: "Gmail dani.kaikkonen@gmail.com PLAYAS - 2023-10-18 - SE6FC2315490 - Primary artist, Lyricist PLYAS - 2023-10-02 - Performer, Composer ",
+            Muistiinpanot: [] 
+        },
+        { 
+            Nimi: "Tuomas Hyväri",
+            Osuus: "Artisti",
+            Artistinimi: "NO DATA",
+            ID: generateID(),
+            Lisatiedot: "hyvärituomas@gmail.com",
+            Muistiinpanot: [] 
+        },
+        { 
+            Nimi: "Milo Eskelinen",
+            Osuus: "Artisti",
+            Artistinimi: "NO DATA",
+            ID: generateID(),
+            Lisatiedot: "milo.eskelinen@gmail.com",
+            Muistiinpanot: [] 
+        },
+        { 
+            Nimi: "Waltteri Viljanen",
+            Osuus: "Artisti",
+            Artistinimi: "Spook",
+            ID: generateID(),
+            Lisatiedot: "Spook REG:10.11.2023 ID:JNMHOST Gmail: maippi1987@gmail.com Asuinpaikka: Eurajoki Haittaaks-2023-07-30-SE6FC2305480 Primary artist, Lyricist, Other Data: Haittaaks, Siivet (Ft, Jiri Ahonen, Vastatuulta (Maiju Viljanen), Pudotaan FT. Jiri Ahonen Sha La La fT. Maiju Viljanen (UPC SE CODE NOT AVAILABLE CANNOT REACH DATABASE)) ",
+            Muistiinpanot: [] 
+        },
+        { 
+            Nimi: "Jere Särkkä",
+            Osuus: "Tuottaja",
+            Artistinimi: "JS",
+            ID: generateID(),
+            Lisatiedot: "Producer Haittaaks 2023-07-30 SE6FC2305480",
+            Muistiinpanot: [] 
+        },
+        { 
+            Nimi: "Oula Nyyssönen",
+            Osuus: "Tuotanto,Laulu,Sanoitus",
+            Artistinimi: "ONA",
+            ID: generateID(),
+            Lisatiedot: "oulanyyssonen@gmail.com Jengi Jauhaa 2023-11-05 SE6FC2315502 Primary artist Money Talk 2023-10-08 SE6FC2315399 Lyricist Money Talk 2023-10-08 SE6FC2315399 Primary artist Money Talk 2023-10-08 SE6FC2315399 Composer Mestoil 2023-09-12 SE6FC2305608 Primary artist Mestoil 2023-09-12 SE6FC2305608 Lyricist",
+            Muistiinpanot: [] 
+        },
+        { 
+            Nimi: "JNM GROUP",
+            Osuus: "Julkaisu",
+            Artistinimi: "JNM RECORDS ",
+            ID: generateID(),
+            Lisatiedot: "Perustettu: 01.06.2023 MIKKELI Jäsenet:28 MODERAATTORIT 8 Jäsentä",
+            Muistiinpanot: [] 
+        },
+        { 
+            Nimi: "2Fat",
+            Osuus: "Artisti",
+            Artistinimi: "2Fat",
+            ID: generateID(),
+            Lisatiedot: "JIRI AHONEN PRN0 KAIRA | 2023-09-20 | SE6FC2305710 | Primary artist ",
+            Muistiinpanot: [] 
+        },
+        { 
+            Nimi: "Kaappinisti",
+            Osuus: "Artisti",
+            Artistinimi: "Kaappinisti",
+            ID: generateID(),
+            Lisatiedot: "EETU ESKELINEN PRN0 KAIRA | 2023-09-20 | SE6FC2305710 | Primary artist Keksi",
+            Muistiinpanot: [] 
+        },
+        { 
+            Nimi: "Nakkidiileri",
+            Osuus: "Artisti",
+            Artistinimi: "Nakkidiileri",
+            ID: generateID(),
+            Lisatiedot: "TOMI HÄMÄLÄINEN Keksi FT 2fat, Kaappinisti",
+            Muistiinpanot: [] 
+        },
+        { 
+            Nimi: "P.AUTOFELLAATIO",
+            Osuus: "Artisti(nahlo)",
+            Artistinimi: "P.AUTOFELLAATIO ",
+            ID: generateID(),
+            Lisatiedot: "NUUTTI JUSSILA MME, POPVIINA, LÄHEMMÄS, PULLA, ",
+            Muistiinpanot: [] 
+        },
+        { 
+            Nimi: "Milo Nylund",
+            Osuus: "Artisti (EX)",
+            Artistinimi: "MCL ",
+            ID: generateID(),
+            Lisatiedot: "",
+            Muistiinpanot: [] 
+        },
+        { 
+            Nimi: "Valious",
+            Osuus: "Tuottaja,Laulaja",
+            Artistinimi: "Valious",
+            ID: generateID(),
+            Lisatiedot: "vxlious@gmail.com - Hollanti ",
+            Muistiinpanot: [] 
+        },
+        { 
+            Nimi: "Rossgossage",
+            Osuus: "Tuottaja",
+            Artistinimi: "Rossgossage",
+            ID: generateID(),
+            Lisatiedot: "tuottaja",
+            Muistiinpanot: [] 
+        },
+        { 
+            Nimi: "Malloy",
+            Osuus: "Tuottaja",
+            Artistinimi: "Malloy",
+            ID: generateID(),
+            Lisatiedot: "tuottaja",
+            Muistiinpanot: [] 
+        },
+        { 
+            Nimi: "Zainy",
+            Osuus: "Tuottaja",
+            Artistinimi: "Zainy",
+            ID: generateID(),
+            Lisatiedot: "Tuottaja Suomi",
+            Muistiinpanot: [] 
+        },
+        { 
+            Nimi: "ARINA",
+            Osuus: "Laulaja",
+            Artistinimi: "ARINA",
+            ID: generateID(),
+            Lisatiedot: "Venäjä, Laulaja",
+            Muistiinpanot: [] 
+        },
+        { 
+            Nimi: "FainaMusic",
+            Osuus: "Soittaja",
+            Artistinimi: "FainaMusic",
+            ID: generateID(),
+            Lisatiedot: ".-",
+            Muistiinpanot: [] 
+        },
+        { 
+            Nimi: "Eskimos",
+            Osuus: "Tuottaja",
+            Artistinimi: "Eskimos",
+            ID: generateID(),
+            Lisatiedot: "Tuottaja",
+            Muistiinpanot: [] 
+        },
+        { 
+            Nimi: "Eeti Lappalainen",
+            Osuus: "Rumpali,Kitaristi",
+            Artistinimi: "EetiL",
+            ID: generateID(),
+            Lisatiedot: "Mikkeli, Artistikäyttäjä tulossa, ",
+            Muistiinpanot: [] 
+        },
+        { 
+            Nimi: "Elias Jaara",
+            Osuus: "Artisti",
+            Artistinimi: "YBN Yeltsu",
+            ID: generateID(),
+            Lisatiedot: "YBNYELTSU@GMAIL.COM, HELSINKI",
+            Muistiinpanot: [] 
+        }
+        // Repeat the structure for each person
+        // ...
+    ];
+    
+
+    
+
+        // Display search results
+        function displaySearchResults(query) {
+            var resultsContainer = document.getElementById("searchResults");
+            resultsContainer.innerHTML = ""; // Clear previous results
+
+            // Simulate searching, for now, you might replace this with actual search logic
+            var searchResults = peopleData.filter(person => person.Nimi.toLowerCase().includes(query.toLowerCase()));
+
+            searchResults.forEach(function (result) {
+                var listItem = document.createElement("li");
+                listItem.classList.add("searchResult");
+                listItem.textContent = result.Nimi;
+                listItem.onclick = function () {
+                    displayPersonDetails(result);
+                };
+                resultsContainer.appendChild(listItem);
+            });
+        }
+
+        // Display person details
+        function displayPersonDetails(person) {
+            var personID = document.getElementById("personID");
+            var personName = document.getElementById("personName");
+            var personRole = document.getElementById("personRole");
+            var personArtistName = document.getElementById("personArtistName");
+            var additionalDetails = document.getElementById("additionalDetails");
+            var personalNotes = document.getElementById("personalNotes");
+
+            personID.textContent = person.ID;
+            personName.textContent = person.Nimi;
+            personRole.textContent = person.Osuus;
+            personArtistName.textContent = person.Artistinimi;
+
+            // Display additional details
+            var detailsList = person.Lisatiedot.split(" ");
+            additionalDetails.innerHTML = ""; // Clear previous details
+
+            detailsList.forEach(function (detail) {
+                var detailItem = document.createElement("p");
+                detailItem.textContent = detail;
+                additionalDetails.appendChild(detailItem);
+            });
+
+            // Display personal notes
+            personalNotes.value = getPersonalNotes(person.ID);
+
+            // Show the details container
+            var personDetails = document.getElementById("personDetails");
+            personDetails.style.display = "block";
+
+            // Log the clicked person
+            logClickedPerson(person.Nimi, personalNotes.value);
+        }
+
+        // Generate a unique ID in the format JNM1124 - JNM1150
+        function generateID() {
+            var prefix = "JNM";
+            var randomNum = Math.floor(1124 + Math.random() * (1150 - 1124 + 1));
+            return prefix + randomNum;
+        }
+
+        // Generate document (placeholder for now)
+        function generateDocument() {
+            var documentDisplay = document.getElementById("documentDisplay");
+            var personalNotes = document.getElementById("personalNotes").value;
+
+            // Save personal notes
+            savePersonalNotes(personID.textContent, personalNotes);
+
+            // Save to search logs
+            saveToSearchLogs(personID.textContent, personalNotes);
+
+            // Placeholder message
+            documentDisplay.textContent = "Viesti Tallennettu\nPERNOTES\n" + personalNotes;
+        }
+
+        // Save personal notes to localStorage
+        function savePersonalNotes(personName, notes) {
+            var savedNotes = JSON.parse(localStorage.getItem("personalNotes")) || {};
+            savedNotes[personID] = notes;
+            localStorage.setItem("personalNotes", JSON.stringify(savedNotes));
+        }
+
+        // Get personal notes from localStorage
+        function getPersonalNotes(personID) {
+            var savedNotes = JSON.parse(localStorage.getItem("personalNotes")) || {};
+            return savedNotes[personID] || "";
+        }
+
+        // Log clicked persons to localStorage with notes and timestamp
+        function logClickedPerson(personID, notes) {
+            var clickedPersons = JSON.parse(localStorage.getItem("clickedPersons")) || [];
+            var timestamp = generateTimestamp();
+            clickedPersons.push({ name: personName, notes: notes, timestamp: timestamp });
+            localStorage.setItem("clickedPersons", JSON.stringify(clickedPersons));
+
+            // Update the log display
+            displayClickedPersonsLog();
+        }
+
+        // Generate a random timestamp
+        function generateTimestamp() {
+            var timestamp = new Date().toISOString();
+            return timestamp;
+        }
+
+        // Display clicked persons log
+        function displayClickedPersonsLog() {
+            var clickedPersonsLog = document.getElementById("clickedPersonsLog");
+
+            // Retrieve clicked persons from localStorage
+            var clickedPersons = JSON.parse(localStorage.getItem("clickedPersons")) || [];
+
+            // Display clicked persons in the log
+            clickedPersonsLog.innerHTML = ""; // Clear previous log
+
+            clickedPersons.forEach(function (person) {
+                var logItem = document.createElement("li");
+                logItem.textContent = `${person.name} - ${person.timestamp}`;
+                clickedPersonsLog.appendChild(logItem);
+            });
+        }
+
+        // Show the log display
+        function showLog() {
+            var logDisplay = document.getElementById("logDisplay");
+            logDisplay.style.display = "block";
+        }
+
+        // Save to search logs
+        function saveToSearchLogs(personID, notes) {
+            var searchLogs = JSON.parse(localStorage.getItem("searchLogs")) || [];
+            var timestamp = generateTimestamp();
+            searchLogs.push({ personID: personID, notes: notes, timestamp: timestamp });
+            localStorage.setItem("searchLogs", JSON.stringify(searchLogs));
+
+            // Update the search logs display
+            displaySearchLogs();
+        }
+
+        // Display search logs
+        function displaySearchLogs() {
+            var searchLogsContainer = document.getElementById("searchLogs");
+
+            // Retrieve search logs from localStorage
+            var searchLogs = JSON.parse(localStorage.getItem("searchLogs")) || [];
+
+            // Display search logs
+            searchLogsContainer.innerHTML = ""; // Clear previous logs
+
+            searchLogs.forEach(function (log) {
+                var logItem = document.createElement("li");
+                logItem.textContent = `HENKILÖ ID: ${log.personID}, Muistiinpano: ${log.notes}, Aikaleima: ${log.timestamp}`;
+                searchLogsContainer.appendChild(logItem);
+            });
+        }
+
+        // Initialize session ID and current date
+        var sessionID = generateID();
+        var currentDate = getCurrentDate();
+
+        // Display session ID and current date
+        document.getElementById("sessionID").textContent = sessionID;
+        document.getElementById("currentDate").textContent = currentDate;
+
+        // Generate current date in the format DD-MM-YYYY
+        function getCurrentDate() {
+            var today = new Date();
+            var dd = String(today.getDate()).padStart(2, '0');
+            var mm = String(today.getMonth() + 1).padStart(2, '0');
+            var yyyy = today.getFullYear();
+            return dd + '-' + mm + '-' + yyyy;
+        }
+        
+    </script>
+</body>
+</html>
